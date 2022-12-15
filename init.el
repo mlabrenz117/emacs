@@ -187,7 +187,7 @@
 (setq-default evil-indent-convert-tabs nil)
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
-(setq-default evil-shift-round nil)
+(setq-default evil-shift-round t)
 
 ;; ----------------------------------------------------------------------------
 ;; Packages
@@ -233,6 +233,7 @@
   :commands (hl-prog-extra-mode)
   :init (add-hook 'prog-mode-hook #'hl-prog-extra-mode))
 
+(use-package magit)
 
 ;; Main Vim emulation package. Why?
 ;; .. without this, you won't have Vim key bindings or modes.
@@ -249,23 +250,54 @@
   ;; Initialize.
   (evil-mode)
 
+  (add-hook 'magit-mode-hook
+    (lambda ()
+      (evil-add-hjkl-bindings magit-mode-map 'emacs
+        (kbd "/")    'evil-search-forward
+        (kbd "n")    'evil-search-next
+        (kbd "N")    'evil-search-previous
+        (kbd "C-d")  'evil-scroll-down
+        (kbd "C-u")  'evil-scroll-up
+        (kbd "C-w C-w")  'other-window)))
+
+  (evil-set-initial-state 'occur-edit-mode 'normal)
+  (add-hook 'occur-mode-hook
+    (lambda ()
+      (evil-add-hjkl-bindings occur-mode-map 'emacs)
+      (evil-add-hjkl-bindings occur-edit-mode-map 'emacs
+        (kbd "/")    'evil-search-forward
+        (kbd "n")    'evil-search-next
+        (kbd "N")    'evil-search-previous
+        (kbd "C-d")  'evil-scroll-down
+        (kbd "C-u")  'evil-scroll-up
+        (kbd "i")    'occur-edit-mode
+        (kbd "C-w C-w")  'other-window)))
+
   (setq evil-ex-search-case 'sensitive))
+
+(use-package evil-commentary
+  :ensure t
+  :demand t
+  :config
+  (evil-commentary-mode))
+
+(use-package evil-surround
+  :ensure t
+  :demand t
+  :config
+  (global-evil-surround-mode))
+
+(use-package evil-indent-plus
+  :ensure t
+  :demand t
+  :config
+  (evil-indent-plus-default-bindings))
+
+(use-package evil-numbers)
 
 ;; Use a thin wrapper for undo. Why?
 ;; .. By default undo doesn't support redo as most users would expect from other software.
 (use-package undo-fu)
-
-;; Use evil numbers to increment & decrement. Why?
-;; .. evil-mode doesn't include this Vim functionality.
-(use-package evil-numbers)
-
-;; Perform actions on surrounding characters. Why?
-;; .. while not part of Vim, it's a useful & common package for developers.
-(use-package evil-surround
-  :demand t
-  :config
-  ;; Initialize.
-  (global-evil-surround-mode 1))
 
 ;; Prompt for available keys after some delay. Why?
 ;; .. useful to see available keys after some delay, especially for evil-leader key.
@@ -275,85 +307,267 @@
   ;; Initialize.
   (which-key-mode))
 
+;; Enable vertico
+(use-package vertico
+  :bind (:map vertico-map
+              ("C-j" . vertico-next)
+              ("C-k" . vertico-previous))
+  :init
+  (vertico-mode)
+
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  ;; (setq vertico-resize t)
+
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  (setq vertico-cycle t))
+
+;; Persist history over Emacs restarts. Vertico sorts by history position.
+(use-package savehist
+  :init
+  (savehist-mode))
+
+;; A few more useful configurations...
+(use-package emacs
+  :init
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+  (defun crm-indicator (args)
+    (cons (format "[CRM%s] %s"
+                  (replace-regexp-in-string
+                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                   crm-separator)
+                  (car args))
+          (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  (use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Vertico commands are hidden in normal buffers.
+  ;; (setq read-extended-command-predicate
+  ;;       #'command-completion-default-include-p)
+
+  ;; Enable recursive minibuffers
+  (setq enable-recursive-minibuffers t))
+
+;; Example configuration for Consult
+(use-package consult
+  ;; Replace bindings. Lazily loaded due by `use-package'.
+  :bind (;; C-c bindings (mode-specific-map)
+         ("C-c h" . consult-history)
+         ("C-c m" . consult-mode-command)
+         ("C-c k" . consult-kmacro)
+         ;; C-x bindings (ctl-x-map)
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings (goto-map)
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings (search-map)
+         ("M-s d" . consult-find)
+         ("M-s D" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s m" . consult-multi-occur)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key (kbd "M-."))
+  ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key (kbd "M-.")
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; (kbd "C-+")
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+  ;; By default `consult-project-function' uses `project-root' from project.el.
+  ;; Optionally configure a different project root function.
+  ;; There are multiple reasonable alternatives to chose from.
+  ;;;; 1. project.el (the default)
+  ;; (setq consult-project-function #'consult--default-project--function)
+  ;;;; 2. projectile.el (projectile-project-root)
+  ;; (autoload 'projectile-project-root "projectile")
+  ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;;;; 3. vc.el (vc-root-dir)
+  ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+  ;;;; 4. locate-dominating-file
+  ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+)
+
+;; Enable rich annotations using the Marginalia package
+(use-package marginalia
+  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  ;; The :init configuration is always executed (Not lazy!)
+  :init
+
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+
 ;; Ivy completion. Why?
 ;; .. makes completing various prompts for input much more friendly & interactive.
-(use-package ivy
-  :demand t
-  :config
-  (ivy-mode)
-
-  ;; Always show half the window height. Why?
-  ;; .. useful when searching through large lists of content.
-  (setq ivy-height-alist `((t . ,(lambda (_caller) (/ (frame-height) 2)))))
-
-  ;; Vim style keys in ivy (holding Control).
-  (define-key ivy-minibuffer-map (kbd "C-j") 'next-line)
-  (define-key ivy-minibuffer-map (kbd "C-k") 'previous-line)
-
-  (define-key ivy-minibuffer-map (kbd "C-h") 'minibuffer-keyboard-quit)
-  (define-key ivy-minibuffer-map (kbd "C-l") 'ivy-done)
-
-  ;; open and next
-  (define-key ivy-minibuffer-map (kbd "C-M-j") 'ivy-next-line-and-call)
-  (define-key ivy-minibuffer-map (kbd "C-M-k") 'ivy-previous-line-and-call)
-
-  (define-key ivy-minibuffer-map (kbd "<C-return>") 'ivy-done)
-
-  ;; so we can switch away
-  (define-key ivy-minibuffer-map (kbd "C-w") 'evil-window-map))
+;(use-package ivy
+;  :demand t
+;  :config
+;  (ivy-mode)
+;
+;  ;; Always show half the window height. Why?
+;  ;; .. useful when searching through large lists of content.
+;  (setq ivy-height-alist `((t . ,(lambda (_caller) (/ (frame-height) 2)))))
+;
+;  ;; Vim style keys in ivy (holding Control).
+;  (define-key ivy-minibuffer-map (kbd "C-j") 'next-line)
+;  (define-key ivy-minibuffer-map (kbd "C-k") 'previous-line)
+;
+;  (define-key ivy-minibuffer-map (kbd "C-h") 'minibuffer-keyboard-quit)
+;  (define-key ivy-minibuffer-map (kbd "C-l") 'ivy-done)
+;
+;  ;; open and next
+;  (define-key ivy-minibuffer-map (kbd "C-M-j") 'ivy-next-line-and-call)
+;  (define-key ivy-minibuffer-map (kbd "C-M-k") 'ivy-previous-line-and-call)
+;
+;  (define-key ivy-minibuffer-map (kbd "<C-return>") 'ivy-done)
+;
+;  ;; so we can switch away
+;  (define-key ivy-minibuffer-map (kbd "C-w") 'evil-window-map))
 
 ;; Use for auto-complete. Why?
 ;; .. saves typing, allows multiple back-ends based on the current language/mode.
-(use-package company
-  :commands (company-complete-common company-dabbrev)
-  :config
-  (global-company-mode)
+;(use-package company
+;  :commands (company-complete-common company-dabbrev)
+;  :config
+;  (global-company-mode)
 
   ;; Increase maximum number of items to show in auto-completion. Why?
   ;; .. seeing more at once gives you a better overview of your options.
-  (setq company-tooltip-limit 40)
+;  (setq company-tooltip-limit 40)
 
   ;; Don't make abbreviations lowercase or ignore case. Why?
   ;; .. many languages are case sensitive, so changing case isn't helpful.
-  (setq company-dabbrev-downcase nil)
-  (setq company-dabbrev-ignore-case nil)
+;  (setq company-dabbrev-downcase nil)
+;  (setq company-dabbrev-ignore-case nil)
 
   ;; Key-map: hold Control for Vim motion. Why?
   ;; .. we're already holding Control, allow navigation at the same time.
-  (define-key company-active-map (kbd "C-j") 'company-select-next-or-abort)
-  (define-key company-active-map (kbd "C-k") 'company-select-previous-or-abort)
-  (define-key company-active-map (kbd "C-l") 'company-complete-selection)
-  (define-key company-active-map (kbd "C-h") 'company-abort)
-  (define-key company-active-map (kbd "<C-return>") 'company-complete-selection)
+;  (define-key company-active-map (kbd "C-j") 'company-select-next-or-abort)
+;  (define-key company-active-map (kbd "C-k") 'company-select-previous-or-abort)
+;  (define-key company-active-map (kbd "C-l") 'company-complete-selection)
+;  (define-key company-active-map (kbd "C-h") 'company-abort)
+;  (define-key company-active-map (kbd "<C-return>") 'company-complete-selection)
 
-  (define-key company-search-map (kbd "C-j") 'company-select-next)
-  (define-key company-search-map (kbd "C-k") 'company-select-previous))
+;  (define-key company-search-map (kbd "C-j") 'company-select-next)
+;  (define-key company-search-map (kbd "C-k") 'company-select-previous))
 
 ;; Use `swiper' for interactive buffer search. Why?
 ;; .. quickly search the buffer if useful.
-(use-package swiper
-  :commands (swiper)
-  :config
+;(use-package swiper
+;  :commands (swiper)
+;  :config
 
   ;; Go to the start of the match instead of the end. Why?
   ;; .. allows us to operate on the term just jumped to (look up reference for e.g.)
-  (setq swiper-goto-start-of-match t))
+;  (setq swiper-goto-start-of-match t))
 
 ;; Use counsel for project wide searches. Why?
 ;; .. interactive project wide search is incredibly useful.
-(use-package counsel
-  :commands (counsel-git-grep counsel-switch-buffer))
-
-;; Find file in project. Why?
-;; .. interactively narrowing down other files in the project is very useful.
-(use-package find-file-in-project
-  :commands (find-file-in-project))
-
-;; Use `diff-hl'. Why?
-;; .. shows lines you have modified from the last commit.
-(use-package diff-hl
-  :demand t
-  :config (global-diff-hl-mode))
+;(use-package counsel
+;  :commands (counsel-git-grep counsel-switch-buffer))
 
 ;; Highlights numbers. Why?
 ;; .. Emacs doesn't do this by default, use a package.
@@ -522,11 +736,11 @@
       (delete-overlay mouse-secondary-overlay))))
 
 ;; Vim increment/decrement keys.
-(define-key evil-normal-state-map (kbd "C-a") 'evil-numbers/inc-at-pt)
-(define-key evil-normal-state-map (kbd "C-x") 'evil-numbers/dec-at-pt)
+(define-key evil-normal-state-map (kbd "<leader>a") 'evil-numbers/inc-at-pt)
+(define-key evil-normal-state-map (kbd "<leader>x") 'evil-numbers/dec-at-pt)
 
-(define-key evil-visual-state-map (kbd "g C-a") 'evil-numbers/inc-at-pt-incremental)
-(define-key evil-visual-state-map (kbd "g C-x") 'evil-numbers/dec-at-pt-incremental)
+(define-key evil-visual-state-map (kbd "g <leader>a") 'evil-numbers/inc-at-pt-incremental)
+(define-key evil-visual-state-map (kbd "g <leader>x") 'evil-numbers/dec-at-pt-incremental)
 
 ;; Auto complete using words from the buffer.
 (define-key evil-insert-state-map (kbd "C-n") 'company-dabbrev)
@@ -540,16 +754,22 @@
 
 ;; Example leader keys for useful functionality exposed by packages.
 (with-eval-after-load 'evil
-  (evil-set-leader '(normal) (kbd "<SPC>"))
+  (evil-set-leader '(normal) (kbd ","))
 
   ;; Interactive file name search.
-  (evil-define-key 'normal 'global (kbd "<leader>k") 'find-file-in-project)
+
   ;; Interactive file content search (git).
-  (evil-define-key 'normal 'global (kbd "<leader>f") 'counsel-git-grep)
+  (evil-define-key 'normal 'global (kbd "<leader>f") 'consult-git-grep)
+  (evil-define-key 'normal 'global (kbd "<leader>r") 'consult-ripgrep)
   ;; Interactive current-file search.
-  (evil-define-key 'normal 'global (kbd "<leader>s") 'swiper)
+  (evil-define-key 'normal 'global (kbd "<leader>s") 'consult-line)
+  (evil-define-key 'normal 'global (kbd "<leader>S") 'consult-line-multi)
   ;; Interactive open-buffer switch.
-  (evil-define-key 'normal 'global (kbd "<leader>b") 'counsel-switch-buffer))
+  (evil-define-key 'normal 'global (kbd "<leader>b") 'consult-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>k") 'kill-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>g") 'magit))
+
+
 
 ;; ----------------------------------------------------------------------------
 ;; Custom Variables

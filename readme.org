@@ -67,22 +67,28 @@ intended to for VIM users who prefer to build their own ~init.el~ file instead o
 
   These packages are used:
 
-  - ~company~: /Auto-complete./
-  - ~counsel~: /Search./
   - ~default-font-presets~: /Scale all text./
   - ~evil-numbers~: /Additional VIM functionality to increment/decrement numbers./
   - ~evil-surround~: /Additional VIM functionality./
   - ~evil~: /VIM functionality./
-  - ~find-file-in-project~: /Project level file navigation./
   - ~highlight-numbers~: /Support for highlighting numbers./
   - ~diff-hl~ /Shows changes in the gutter./
   - ~hl-prog-mode-extra~: /Highlight common tags in code-comments, e.g: ~TODO~, ~FIXME~, ~URL's~ and email addresses./
   - ~inkpot-theme~: /Theme ported from VIM./
-  - ~ivy~: /Interactive completion./
   - ~package-utils~: /Provides functionality to upgrade packages./
-  - ~swiper~: /Interactive current-buffer search./
   - ~undo-fu~: /Provides typical undo/redo behavior, without loosing full non-linear undo history./
   - ~which-key~: /Shows available key shortcuts (for leader key)./
+
+  - ~vertico~: /Vertical Interactive Completion. - Auto-complete UI./
+  - ~consult~: /Auto-complete./
+  - ~marginalia~: /Margin notes for minibuffer and auto-complete./
+
+  - ~company~: /Auto-complete./
+  - ~counsel~: /Search./
+  - ~ivy~: /Interactive completion./
+  - ~swiper~: /Interactive current-buffer search./
+  - ~find-file-in-project~: /Project level file navigation./
+
 
 * What Next?
 
@@ -94,7 +100,3 @@ intended to for VIM users who prefer to build their own ~init.el~ file instead o
 
   These have intentionally been omitted to keep this fairly minimal,
   and avoid too many opinionated decisions about which packages you'd like to use.
-
-* Feedback Welcome
-
-  If you have suggestions or corrections, feel free to submit a PR.
