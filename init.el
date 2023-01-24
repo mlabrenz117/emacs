@@ -34,6 +34,9 @@
 (set-keyboard-coding-system 'utf-8)
 (setq default-buffer-file-coding-system 'utf-8)
 
+(global-set-key "\C-x\C-m" 'execute-extended-command)
+(global-set-key "\C-c\C-m" 'execute-extended-command)
+
 ;; Show text instead prompts instead of dialog popups. Why?
 ;; .. because they're not as nice for quick keyboard access.
 (setq use-dialog-box nil)
@@ -327,6 +330,15 @@
   ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
   (setq vertico-cycle t))
 
+(setq corfu-auto t
+      corfu-quit-no-match 'separator)
+(use-package corfu
+  :bind (:map corfu-map
+              ("C-j" . corfu-next)
+              ("C-k" . corfu-previous))
+  :init
+  (global-corfu-mode))
+
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 (use-package savehist
   :init
@@ -337,6 +349,9 @@
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+
+  (setq completion-cycle-threshold 3)
+  (setq tab-always-indent 'complete)
   (defun crm-indicator (args)
     (cons (format "[CRM%s] %s"
                   (replace-regexp-in-string
@@ -346,19 +361,11 @@
           (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-  (use-package orderless
-  :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
-
   ;; Do not allow the cursor in the minibuffer prompt
   (setq minibuffer-prompt-properties
         '(read-only t cursor-intangible t face minibuffer-prompt))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
 
   ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
   ;; Vertico commands are hidden in normal buffers.
@@ -367,6 +374,17 @@
 
   ;; Enable recursive minibuffers
   (setq enable-recursive-minibuffers t))
+
+
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+
 
 ;; Example configuration for Consult
 (use-package consult
@@ -500,74 +518,6 @@
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
 
-;; Ivy completion. Why?
-;; .. makes completing various prompts for input much more friendly & interactive.
-;(use-package ivy
-;  :demand t
-;  :config
-;  (ivy-mode)
-;
-;  ;; Always show half the window height. Why?
-;  ;; .. useful when searching through large lists of content.
-;  (setq ivy-height-alist `((t . ,(lambda (_caller) (/ (frame-height) 2)))))
-;
-;  ;; Vim style keys in ivy (holding Control).
-;  (define-key ivy-minibuffer-map (kbd "C-j") 'next-line)
-;  (define-key ivy-minibuffer-map (kbd "C-k") 'previous-line)
-;
-;  (define-key ivy-minibuffer-map (kbd "C-h") 'minibuffer-keyboard-quit)
-;  (define-key ivy-minibuffer-map (kbd "C-l") 'ivy-done)
-;
-;  ;; open and next
-;  (define-key ivy-minibuffer-map (kbd "C-M-j") 'ivy-next-line-and-call)
-;  (define-key ivy-minibuffer-map (kbd "C-M-k") 'ivy-previous-line-and-call)
-;
-;  (define-key ivy-minibuffer-map (kbd "<C-return>") 'ivy-done)
-;
-;  ;; so we can switch away
-;  (define-key ivy-minibuffer-map (kbd "C-w") 'evil-window-map))
-
-;; Use for auto-complete. Why?
-;; .. saves typing, allows multiple back-ends based on the current language/mode.
-;(use-package company
-;  :commands (company-complete-common company-dabbrev)
-;  :config
-;  (global-company-mode)
-
-  ;; Increase maximum number of items to show in auto-completion. Why?
-  ;; .. seeing more at once gives you a better overview of your options.
-;  (setq company-tooltip-limit 40)
-
-  ;; Don't make abbreviations lowercase or ignore case. Why?
-  ;; .. many languages are case sensitive, so changing case isn't helpful.
-;  (setq company-dabbrev-downcase nil)
-;  (setq company-dabbrev-ignore-case nil)
-
-  ;; Key-map: hold Control for Vim motion. Why?
-  ;; .. we're already holding Control, allow navigation at the same time.
-;  (define-key company-active-map (kbd "C-j") 'company-select-next-or-abort)
-;  (define-key company-active-map (kbd "C-k") 'company-select-previous-or-abort)
-;  (define-key company-active-map (kbd "C-l") 'company-complete-selection)
-;  (define-key company-active-map (kbd "C-h") 'company-abort)
-;  (define-key company-active-map (kbd "<C-return>") 'company-complete-selection)
-
-;  (define-key company-search-map (kbd "C-j") 'company-select-next)
-;  (define-key company-search-map (kbd "C-k") 'company-select-previous))
-
-;; Use `swiper' for interactive buffer search. Why?
-;; .. quickly search the buffer if useful.
-;(use-package swiper
-;  :commands (swiper)
-;  :config
-
-  ;; Go to the start of the match instead of the end. Why?
-  ;; .. allows us to operate on the term just jumped to (look up reference for e.g.)
-;  (setq swiper-goto-start-of-match t))
-
-;; Use counsel for project wide searches. Why?
-;; .. interactive project wide search is incredibly useful.
-;(use-package counsel
-;  :commands (counsel-git-grep counsel-switch-buffer))
 
 ;; Highlights numbers. Why?
 ;; .. Emacs doesn't do this by default, use a package.
@@ -658,15 +608,6 @@
     (modify-syntax-entry ?- "w")
     (modify-syntax-entry ?_ "w")))
 
-(add-hook 'python-mode-hook
-  (lambda ()
-    (setq-local fill-column 80)
-    (setq-local tab-width 4)
-    (setq-local evil-shift-width 4)
-    (setq-local indent-tabs-mode nil)
-
-    (setq-local ffip-patterns '("*.py"))))
-
 ;; -----
 ;; Shell
 ;; -----
@@ -684,6 +625,59 @@
 ;; Other Languages
 ;; ---------------
 
+;; -----
+;; Rust
+;; -----
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-atuo-activate nil)
+
+  ;; (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'ml/rustic-mode-hook))
+(defun ml/rustic-mode-hook ()
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
+
+(use-package lsp-mode
+  :ensure
+  :commands lsp
+  :custom
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  (lsp-rust-analyzer-server-diaplay-inline-hints nil)
+  ;; (lsp-rust-analyzer-server-display-lifetime-elision-hints-enable "skip_trivial")
+  (lsp-rust-analyzer-display-chaining-hints nil)
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable nil))
+
+(use-package consult-lsp :ensure)
+
+;; -----
+;;   C
+;; -----
+
 (add-hook 'c-mode-hook
   (lambda ()
     (setq-local fill-column 120)
@@ -698,6 +692,19 @@
     ;; Don't delimit on '_'. Why?
     ;; .. makes searching for variable names inconvenient.
     (modify-syntax-entry ?_ "w")))
+
+;; ------
+;; Python
+;; ------
+
+(add-hook 'python-mode-hook
+  (lambda ()
+    (setq-local fill-column 80)
+    (setq-local tab-width 4)
+    (setq-local evil-shift-width 4)
+    (setq-local indent-tabs-mode nil)
+
+    (setq-local ffip-patterns '("*.py"))))
 
 ;; ----------------------------------------------------------------------------
 ;; Key-map
@@ -742,11 +749,8 @@
 (define-key evil-visual-state-map (kbd "g <leader>a") 'evil-numbers/inc-at-pt-incremental)
 (define-key evil-visual-state-map (kbd "g <leader>x") 'evil-numbers/dec-at-pt-incremental)
 
-;; Auto complete using words from the buffer.
-(define-key evil-insert-state-map (kbd "C-n") 'company-dabbrev)
-;; Comprehensive auto-complete.
-(define-key evil-insert-state-map (kbd "C-SPC") 'company-complete-common)
-
+(define-key evil-insert-state-map (kbd "C-k") nil)
+(define-key evil-insert-state-map (kbd "C-n") 'evil-insert-digraph)
 
 ;; ----------------
 ;; Evil Leader Keys
@@ -765,8 +769,10 @@
   (evil-define-key 'normal 'global (kbd "<leader>s") 'consult-line)
   (evil-define-key 'normal 'global (kbd "<leader>S") 'consult-line-multi)
   ;; Interactive open-buffer switch.
-  (evil-define-key 'normal 'global (kbd "<leader>b") 'consult-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>b") 'consult-project-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader><leader>b") 'consult-buffer)
   (evil-define-key 'normal 'global (kbd "<leader>k") 'kill-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>p") 'project-switch-project)
   (evil-define-key 'normal 'global (kbd "<leader>g") 'magit))
 
 
