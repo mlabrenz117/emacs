@@ -91,7 +91,7 @@
 
 ;; Scroll N lines to screen edge. Why?
 ;; .. having some margin is useful to see some lines above/below the lines you edit.
-(setq scroll-margin 2)
+(setq scroll-margin 8)
 
 ;; Scroll back this many lines to being the cursor back on screen. Why?
 ;; .. default behavior is to re-center which is jarring. Clamp to the scroll margin instead.
@@ -192,6 +192,12 @@
 (setq-default tab-width 4)
 (setq-default evil-shift-round t)
 
+;; Auto close pairs
+(electric-pair-mode t)
+(recentf-mode)
+(global-auto-revert-mode)
+
+
 ;; ----------------------------------------------------------------------------
 ;; Packages
 ;; ########
@@ -225,9 +231,26 @@
 
 ;; Nice theme from Vim. Why?
 ;; .. personal preference.
-(use-package inkpot-theme
+;; (use-package inkpot-theme
+;;   :demand t
+;;   :config (load-theme 'inkpot t t))
+
+(use-package gruvbox-theme
   :demand t
-  :config (load-theme 'inkpot t))
+  :config (load-theme 'gruvbox-dark-hard t))
+
+(use-package slime
+  :config (setq inferior-lisp-program "sbcl"))
+
+(use-package ample-theme
+  :init (progn (load-theme 'ample t t)
+               (load-theme 'ample-flat t t)
+               (load-theme 'ample-light t t)
+               (enable-theme 'ample)
+               (with-eval-after-load "ample-theme"
+                 (custom-theme-set-faces
+                  'ample
+                  '(font-lock-string-face ((t (:foreground "#057f40"))))))))
 
 
 ;; Highlight terms in code-comments such as TODO, FIXME, URL's & email. Why?
@@ -236,34 +259,69 @@
   :commands (hl-prog-extra-mode)
   :init (add-hook 'prog-mode-hook #'hl-prog-extra-mode))
 
-(use-package magit)
+
+;; ---------
+;; Terminal
+;; ---------
+
+(use-package vterm
+  :config
+  (setq vterm-shell "/usr/bin/nu")
+  (add-hook 'vterm-mode-hook (lambda() (display-line-numbers-mode 0))))
+
+;; ---------
+;; Git
+;; ---------
+(use-package magit
+  :config
+  (add-hook 'magit-mode-hook
+            (lambda ()
+              (define-key magit-mode-map (kbd "C-j") #'magit-status-quick)
+              (define-key magit-mode-map (kbd "j") #'magit-next-line)
+              (define-key magit-mode-map (kbd "C-k") #'magit-delete-thing)
+              (define-key magit-mode-map (kbd "k") #'magit-previous-line)
+              (define-key magit-status-mode-map (kbd "C-j") #'magit-status-jump)
+              (define-key magit-status-mode-map (kbd "j") #'magit-next-line)
+              (define-key magit-log-mode-map (kbd "C-j") #'magit-log-move-to-revision)
+              (define-key magit-log-mode-map (kbd "j") #'magit-next-line)
+              (define-key magit-diff-mode-map (kbd "C-j") #'magit-jump-to-diffstat-or-diff)
+              (define-key magit-diff-mode-map (kbd "j") #'magit-next-line))))
 
 ;; Main Vim emulation package. Why?
 ;; .. without this, you won't have Vim key bindings or modes.
 (use-package evil
   :demand t
   :init
-
   ;; See `undo-fu' package.
   (setq evil-undo-system 'undo-fu)
   ;; For some reasons evils own search isn't default.
   (setq evil-search-module 'evil-search)
-
   :config
   ;; Initialize.
   (evil-mode)
 
-  (add-hook 'magit-mode-hook
-    (lambda ()
-      (evil-add-hjkl-bindings magit-mode-map 'emacs
-        (kbd "/")    'evil-search-forward
-        (kbd "n")    'evil-search-next
-        (kbd "N")    'evil-search-previous
-        (kbd "C-d")  'evil-scroll-down
-        (kbd "C-u")  'evil-scroll-up
-        (kbd "C-w C-w")  'other-window)))
+  ;; (add-hook 'magit-mode-hook
+  ;;   (lambda ()
+  ;;     (dolist (mode '(magit-mode-map magit-blob-mode-map magit-log-mode magit-wip-mode magit-diff-mode magit-refs-mode magit-stash-mode magit-cherry-mode magit-reflog-mode magit-status-mode magit-process-mode magit-selection-mode magit-stashes-mode magit-repolist-mode magit-reversion-mode magit-log-select-mode magit-auto-revert-mode magit-merge-preview-mode magit-submodule-list-mode magit-wip-after-save-mode magit-blame-read-only-mode magit-wip-after-apply-mode magit-wip-before-change-mode magit-wip-initial-backup-mode))
+  ;;       (evil-define-key 'emacs mode
+  ;;         "C-j" magit-next-line
+  ;;         "C-k" magit-previous-line
+  ;;         "/" 'evil-search-forward
+  ;;         ))))
+  ;; (add-hook 'magit-mode-hook
+  ;;   (lambda ()
+  ;;     (evil-add-hjkl-bindings magit-mode-map 'emacs
+  ;;       (kbd "/")    'evil-search-forward
+  ;;       (kbd "n")    'evil-search-next
+  ;;       (kbd "N")    'evil-search-previous
+  ;;       (kbd "C-d")  'evil-scroll-down
+  ;;       (kbd "C-u")  'evil-scroll-up
+  ;;       (kbd "C-w C-w")  'other-window)))
 
+  (evil-set-initial-state 'magit-mode 'emacs)
   (evil-set-initial-state 'occur-edit-mode 'normal)
+  (evil-set-initial-state 'vterm-mode 'insert)
+
   (add-hook 'occur-mode-hook
     (lambda ()
       (evil-add-hjkl-bindings occur-mode-map 'emacs)
@@ -279,19 +337,16 @@
   (setq evil-ex-search-case 'sensitive))
 
 (use-package evil-commentary
-  :ensure t
   :demand t
   :config
   (evil-commentary-mode))
 
 (use-package evil-surround
-  :ensure t
   :demand t
   :config
   (global-evil-surround-mode))
 
 (use-package evil-indent-plus
-  :ensure t
   :demand t
   :config
   (evil-indent-plus-default-bindings))
@@ -518,6 +573,26 @@
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
 
+(use-package embark
+  :demand t
+  :bind (("C-." . embark-act)
+         ("M-." . embark-dwim)
+         ("C-h B" . embark-bindings))
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command)
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  :config
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package embark-consult
+  :demand t
+  :after (embark consult)
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
 
 ;; Highlights numbers. Why?
 ;; .. Emacs doesn't do this by default, use a package.
@@ -577,6 +652,13 @@
      (flyspell-mode)))))
 
 
+(add-hook
+ 'after-change-major-mode-hook
+ (lambda ()
+   (cond
+    ((derived-mode-p 'prog-mode)
+     (whitespace-mode)))))
+
 ;; ------
 ;; Markup
 ;; ------
@@ -629,7 +711,6 @@
 ;; Rust
 ;; -----
 (use-package rustic
-  :ensure
   :bind (:map rustic-mode-map
               ("M-j" . lsp-ui-imenu)
               ("M-?" . lsp-find-references)
@@ -653,7 +734,6 @@
   (add-hook 'before-save-hook 'lsp-format-buffer nil t))
 
 (use-package lsp-mode
-  :ensure
   :commands lsp
   :custom
   (lsp-rust-analyzer-cargo-watch-command "clippy")
@@ -672,7 +752,7 @@
   (lsp-ui-sideline-show-hover t)
   (lsp-ui-doc-enable nil))
 
-(use-package consult-lsp :ensure)
+(use-package consult-lsp)
 
 ;; -----
 ;;   C
@@ -763,18 +843,19 @@
   ;; Interactive file name search.
 
   ;; Interactive file content search (git).
-  (evil-define-key 'normal 'global (kbd "<leader>f") 'consult-git-grep)
+  ;; (evil-define-key 'normal 'global (kbd "<leader>f") 'consult-git-grep)
+  (evil-define-key 'normal 'global (kbd "<leader>f") 'find-file)
   (evil-define-key 'normal 'global (kbd "<leader>r") 'consult-ripgrep)
+  (evil-define-key 'normal 'global (kbd "<leader>t") 'vterm)
   ;; Interactive current-file search.
   (evil-define-key 'normal 'global (kbd "<leader>s") 'consult-line)
   (evil-define-key 'normal 'global (kbd "<leader>S") 'consult-line-multi)
   ;; Interactive open-buffer switch.
-  (evil-define-key 'normal 'global (kbd "<leader>b") 'consult-project-buffer)
-  (evil-define-key 'normal 'global (kbd "<leader><leader>b") 'consult-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>b") 'consult-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>v") 'consult-project-buffer)
   (evil-define-key 'normal 'global (kbd "<leader>k") 'kill-buffer)
   (evil-define-key 'normal 'global (kbd "<leader>p") 'project-switch-project)
   (evil-define-key 'normal 'global (kbd "<leader>g") 'magit))
-
 
 
 ;; ----------------------------------------------------------------------------
@@ -783,6 +864,9 @@
 
 ;; Store custom variables in an external file. Why?
 ;; .. it means this file can be kept in version control without noise from custom variables.
+
+;; (set-fontset-font "fontset-standard
+;; (set-font-face 'default "fontset-standard")
 
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
