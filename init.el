@@ -202,11 +202,21 @@
 ;; Packages
 ;; ########
 
-(with-eval-after-load 'package
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(require 'package)
 
-(package-initialize)
+(when (version< emacs-version "28")
+  (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+(add-to-list 'package-archives '("stable" . "https://stable.melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+
+(customize-set-variable 'package-archive-priorities
+                        '(("gnu"    . 99)   ; prefer GNU packages
+                          ("nongnu" . 80)   ; use non-gnu packages if
+                                            ; not found in GNU elpa
+                          ("stable" . 70)   ; prefer "released" versions
+                                            ; from melpa
+                          ("melpa"  . 0)))  ; if all else fails, get it
+                                            ; from melpa
 
 ;; Auto-install use-package. Why?
 ;; .. this is a defacto-standard package manager, useful to isolate each package's configuration.
@@ -216,6 +226,10 @@
 
 ;; This is only needed once, near the top of the file
 (eval-when-compile (require 'use-package))
+
+(use-package diminish
+  :ensure t
+  :demand t)
 
 ;; Download automatically. Why?
 ;; .. convenience, so on first start all packages are installed.
@@ -598,6 +612,9 @@
 ;; .. Emacs doesn't do this by default, use a package.
 (use-package highlight-numbers
   :hook ((prog-mode) . highlight-numbers-mode))
+
+(use-package rainbow-delimiters
+  :hook ((proj-mode) . rainbow-delimiters-mode))
 
 ;; Scale all text. Why?
 ;; .. it's useful sometimes to globally zoom in all text.
