@@ -249,22 +249,35 @@
 ;;   :demand t
 ;;   :config (load-theme 'inkpot t t))
 
-(use-package gruvbox-theme
-  :demand t
-  :config (load-theme 'gruvbox-dark-hard t))
+(use-package doom-themes
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  :init
+  (load-theme 'doom-peacock t)
+  (enable-theme 'doom-peacock)
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config))
+
+(use-package doom-modeline
+  :init (doom-modeline-mode 1))
+
+;; (use-package gruvbox-theme
+  ;; :demand t)
+  ;; :config (load-theme 'gruvbox-dark-hard t))
 
 (use-package slime
   :config (setq inferior-lisp-program "sbcl"))
 
-(use-package ample-theme
-  :init (progn (load-theme 'ample t t)
-               (load-theme 'ample-flat t t)
-               (load-theme 'ample-light t t)
-               (enable-theme 'ample)
-               (with-eval-after-load "ample-theme"
-                 (custom-theme-set-faces
-                  'ample
-                  '(font-lock-string-face ((t (:foreground "#057f40"))))))))
+;; (use-package ample-theme
+;;   :init (progn (load-theme 'ample t t)
+;;                (load-theme 'ample-flat t t)
+;;                (load-theme 'ample-light t t)
+;;                (enable-theme 'ample)
+;;                (with-eval-after-load "ample-theme"
+;;                  (custom-theme-set-faces
+;;                   'ample
+;;                   '(font-lock-string-face ((t (:foreground "#057f40"))))))))
 
 
 ;; Highlight terms in code-comments such as TODO, FIXME, URL's & email. Why?
@@ -308,6 +321,7 @@
   :init
   ;; See `undo-fu' package.
   (setq evil-undo-system 'undo-fu)
+  (setq evil-want-C-i-jump nil)
   ;; For some reasons evils own search isn't default.
   (setq evil-search-module 'evil-search)
   :config
@@ -349,6 +363,17 @@
         (kbd "C-w C-w")  'other-window)))
 
   (setq evil-ex-search-case 'sensitive))
+
+(use-package evil-org
+  :after org
+  :hook (org-mode . (lambda () evil-org-mode))
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
+(use-package org-bullets
+  :after org
+  :hook (org-mode . (lambda () evil-bullets-mode 1)))
 
 (use-package evil-commentary
   :demand t
@@ -444,6 +469,11 @@
   ;; Enable recursive minibuffers
   (setq enable-recursive-minibuffers t))
 
+(use-package org-roam
+  :init
+  (setq org-roam-directory (file-truename "~/documents/roam"))
+  (setq org-roam-database-connector 'sqlite-builtin)
+  (org-roam-db-autosync-mode t))
 
 (use-package orderless
   :init

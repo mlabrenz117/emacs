@@ -80,10 +80,10 @@
       (path-separator . ":")
       (null-device . "/dev/null"))))
  '(custom-safe-themes
-   '("d80952c58cf1b06d936b1392c38230b74ae1a2a6729594770762dc0779ac66b7" "36ca8f60565af20ef4f30783aa16a26d96c02df7b4e54e9900a5138fb33808da" "266638c506bdc359f2557e7ec85a9724a1ceee95fc36ea6044fdd51652bad962" default))
+   '("02f57ef0a20b7f61adce51445b68b2a7e832648ce2e7efb19d217b6454c1b644" "d80952c58cf1b06d936b1392c38230b74ae1a2a6729594770762dc0779ac66b7" "36ca8f60565af20ef4f30783aa16a26d96c02df7b4e54e9900a5138fb33808da" "266638c506bdc359f2557e7ec85a9724a1ceee95fc36ea6044fdd51652bad962" default))
  '(ede-project-directories '("/tmp/ede"))
  '(package-selected-packages
-   '(diminish rainbow-delimiters embark-consult embark gruvbox-theme vterm slime ample-theme corfu rustic evil-commentary evil-indent-plus evil-collection magit default-font-presets highlight-numbers marginalia consult orderless vertico which-key evil-surround evil-numbers undo-fu evil hl-prog-extra inkpot-theme package-utils use-package))
+   '(evil-org org-bullets doom-themes doom-modeline emacsql-sqlite emacsql-sqlite-builtin org-roam diminish rainbow-delimiters embark-consult embark gruvbox-theme vterm slime ample-theme corfu rustic evil-commentary evil-indent-plus evil-collection magit default-font-presets highlight-numbers marginalia consult orderless vertico which-key evil-surround evil-numbers undo-fu evil hl-prog-extra inkpot-theme package-utils use-package))
  '(whitespace-style '(face tabs spaces space-mark tab-mark)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
