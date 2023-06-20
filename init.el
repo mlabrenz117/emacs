@@ -255,6 +255,7 @@
         doom-themes-enable-italic t)
   :init
   (load-theme 'doom-peacock t)
+  (disable-theme 'deeper-blue)
   (enable-theme 'doom-peacock)
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))
@@ -365,15 +366,13 @@
   (setq evil-ex-search-case 'sensitive))
 
 (use-package evil-org
-  :after org
   :hook (org-mode . (lambda () evil-org-mode))
   :config
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
 
 (use-package org-bullets
-  :after org
-  :hook (org-mode . (lambda () evil-bullets-mode 1)))
+  :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
 (use-package evil-commentary
   :demand t
