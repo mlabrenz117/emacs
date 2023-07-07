@@ -9,10 +9,6 @@
 
 (require 'register-packages)
 
-;; ;; Use a thin wrapper for undo. Why?
-;; ;; .. By default undo doesn't support redo as most users would expect from other software.
-(require 'undo-fu)
-
 (require 'core-config)
 
 (require 'ui-config)
