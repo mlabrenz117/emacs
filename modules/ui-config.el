@@ -90,7 +90,7 @@
 ;; .. these are common conventions in software that it's useful to highlight them.
 (use-package hl-prog-extra
   :commands (hl-prog-extra-mode)
-  :hook ((prog-mode) . hl-proj-extra-mode))
+  :hook ((prog-mode) . hl-prog-extra-mode))
 
 ;; Highlights numbers. Why?
 ;; .. Emacs doesn't do this by default, use a package.
