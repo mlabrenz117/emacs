@@ -59,6 +59,7 @@
                   'vertico
                   'consult
                   'orderless
+                  'corfu
                   'marginalia
                   'embark
                   'embark-consult
@@ -71,6 +72,7 @@
                   'slime
                   ;;; Utility Packages
                   'package-utils
+                  'emacsql-sqlite-builtin
                   'undo-fu))
   (add-to-list 'package-selected-packages package))
 

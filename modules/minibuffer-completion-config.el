@@ -164,6 +164,7 @@
 (setopt corfu-auto t
       corfu-quit-no-match 'separator)
 (use-package corfu
+  :demand t
   :bind (:map corfu-map
               ("C-j" . corfu-next)
               ("C-k" . corfu-previous))

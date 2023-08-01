@@ -94,7 +94,8 @@
   (setq evil-ex-search-case 'sensitive))
 
 (use-package evil-org
-  :hook (org-mode . (lambda () evil-org-mode))
+  :after org
+  :hook (org-mode . (lambda () (evil-org-mode)))
   :config
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
