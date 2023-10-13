@@ -86,6 +86,11 @@
 ;; .. these are common conventions in software that it's useful to highlight them.
 (use-package hl-prog-extra
   :commands (hl-prog-extra-mode)
+  ;; :config
+  ;; (setq hl-prog-extra-list
+  ;;       (list
+  ;;        ;; Match CONSTANT in comments
+  ;;        '("CONSTANT" 0 comment font-lock-constant-face)))
   :hook ((prog-mode) . hl-prog-extra-mode))
 
 ;; Highlights numbers. Why?
