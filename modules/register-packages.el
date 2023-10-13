@@ -50,6 +50,7 @@
                   ;;; UI Packages
                   'doom-themes
                   'doom-modeline
+                  'git-gutter-fringe
                   'diminish
                   'hl-prog-extra
                   'highlight-numbers

@@ -20,20 +20,16 @@
 ;; Display Options
 ;; ===============
 
-;; Show line numbers. Why?
-;; Helpful to give context when reading errors & the current line is made more prominent.
+;; Show line numbers
 (global-display-line-numbers-mode 1)
 
-;; Even when narrowing, show global line numbers. Why?
-;; .. because these are often referenced in external messages.
+;; Even when narrowing, show global line numbers
 (setq-default display-line-numbers-widen t)
 
-;; Show the column as well as the line. Why?
-;; .. some compiler errors show the column which is useful to compare.
+;; Show the column as well as the line
 (setq column-number-mode t)
 
-;; Show matching parentheses. Why?
-;; .. handy for developers to match nested brackets.
+;; Show matching parentheses
 (show-paren-mode 1)
 
 ;; Don't blink, it's too distracting.
@@ -106,6 +102,13 @@
   :commands (default-font-presets-scale-increase
              default-font-presets-scale-decrease
              default-font-presets-scale-reset))
+
+(use-package git-gutter-fringe
+  :init
+  (setq-default fringes-outside-margins t)
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 
 (defun ml/pulse-line (&rest _)
   "Pulse the current line."
