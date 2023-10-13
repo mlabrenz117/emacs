@@ -74,10 +74,12 @@
   (evil-define-key 'normal 'global (kbd "<leader>S") 'consult-line-multi)
   ;; Interactive open-buffer switch.
   (evil-define-key 'normal 'global (kbd "<leader>b") 'consult-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>m") 'consult-bookmark)
   (evil-define-key 'normal 'global (kbd "<leader>v") 'consult-project-buffer)
-  (evil-define-key 'normal 'global (kbd "<leader>k") 'kill-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>k") 'kill-this-buffer)
   (evil-define-key 'normal 'global (kbd "<leader>p") 'project-switch-project)
   (evil-define-key 'normal 'global (kbd "<leader>g") 'magit)
+  (evil-define-key 'normal 'global (kbd "<leader>,") 'other-frame)
 
   (add-hook 'occur-mode-hook
     (lambda ()
