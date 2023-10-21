@@ -127,6 +127,12 @@
 ;; Git
 ;; ---------
 (use-package magit
+  :config
+  (setq magit-bind-magit-project-status :false)
+  :init
+  (with-eval-after-load 'project
+    (define-key project-prefix-map "m" #'magit-project-status)
+    (add-to-list 'project-switch-commands '(magit-project-status "Magit") t))
   :hook (magit-mode . (lambda ()
                         (define-key magit-mode-map (kbd "C-j") #'magit-status-quick)
                         (define-key magit-mode-map (kbd "j") #'magit-next-line)
