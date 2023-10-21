@@ -55,7 +55,6 @@
                   'hl-prog-extra
                   'highlight-numbers
                   'rainbow-delimiters
-                  'default-font-presets
                   ;;Minibuffer/Completion Packages
                   'vertico
                   'consult

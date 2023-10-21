@@ -35,10 +35,6 @@
 ;; Control +/- or mouse-wheel to zoom. Why?
 ;; .. this is a common shortcut for web-browsers that doesn't conflict with anything else.
 
-(global-set-key (kbd "C-=") 'default-font-presets-scale-increase)
-(global-set-key (kbd "C--") 'default-font-presets-scale-decrease)
-(global-set-key (kbd "C-0") 'default-font-presets-scale-reset)
-
 (global-set-key (kbd "<C-mouse-4>") 'default-font-presets-scale-increase)
 (global-set-key (kbd "<C-mouse-5>") 'default-font-presets-scale-decrease)
 
