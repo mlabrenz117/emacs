@@ -154,5 +154,17 @@
 
     (setq-local ffip-patterns '("*.py"))))
 
+;; ----------
+;; FYT Config
+;; ----------
+
+(defun fyt/accept-checkin-prompt (process string)
+  "Accept checkin prompt during magit git checkin"
+  (when-let ((beg (string-match "Is this list correct?" string)))
+    (process-send-string
+     process
+     "Y\n")))
+(add-hook 'magit-process-prompt-functions 'fyt/accept-checkin-prompt)
+
 (provide 'lang-config)
 ;;; lang-config.el --- ends here
