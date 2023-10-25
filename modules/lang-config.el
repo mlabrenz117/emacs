@@ -25,16 +25,16 @@
 
 (use-package consult-lsp)
 
-;; Options for generic modes. Why?
-;; .. this avoids duplicating checks for all programming and text modes.
-(add-hook
- 'after-change-major-mode-hook
- (lambda ()
-   (cond
-    ((derived-mode-p 'prog-mode)
-     (flyspell-prog-mode))
-    ((derived-mode-p 'text-mode)
-     (flyspell-mode)))))
+;; ;; Options for generic modes. Why?
+;; ;; .. this avoids duplicating checks for all programming and text modes.
+;; (add-hook
+;;  'after-change-major-mode-hook
+;;  (lambda ()
+;;    (cond
+;;     ((derived-mode-p 'prog-mode)
+;;      (flyspell-prog-mode))
+;;     ((derived-mode-p 'text-mode)
+;;      (flyspell-mode)))))
 
 
 (add-hook
@@ -165,6 +165,32 @@
      process
      "Y\n")))
 (add-hook 'magit-process-prompt-functions 'fyt/accept-checkin-prompt)
+
+(defun fyt/search-codebase ()
+  "Grep for a string in the FYT codebase using `rg'."
+  (interactive)
+  (consult-ripgrep
+   `("~/workspace/palms.fileyourtaxes.com/common"
+     "~/workspace/palms.fileyourtaxes.com/staticFiles"
+     "~/workspace/palms.fileyourtaxes.com/accountServices"
+     "~/workspace/palms.fileyourtaxes.com/prepTool"
+     "~/workspace/palms.fileyourtaxes.com/crm"
+     "~/workspace/palms.fileyourtaxes.com/taxCenter"
+     "~/workspace/palms.fileyourtaxes.com/transmissions"
+     "~/workspace/palms.fileyourtaxes.com/IND23"
+     "~/workspace/palms.fileyourtaxes.com/ET23") ""))
+
+(defun fyt/search-backend ()
+  "Grep for a string in the FYT codebase using `rg'."
+  (interactive)
+  (consult-ripgrep
+   `("~/workspace/palms.fileyourtaxes.com/common"
+     "~/workspace/palms.fileyourtaxes.com/staticFiles"
+     "~/workspace/palms.fileyourtaxes.com/accountServices"
+     "~/workspace/palms.fileyourtaxes.com/prepTool"
+     "~/workspace/palms.fileyourtaxes.com/crm"
+     "~/workspace/palms.fileyourtaxes.com/taxCenter"
+     "~/workspace/palms.fileyourtaxes.com/transmissions") ""))
 
 (provide 'lang-config)
 ;;; lang-config.el --- ends here
