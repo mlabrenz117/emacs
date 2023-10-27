@@ -66,7 +66,7 @@
 
   ;; Interactive file content search (git).
   ;; (evil-define-key 'normal 'global (kbd "<leader>f") 'consult-git-grep)
-  (evil-define-key 'normal 'global (kbd "<leader>f") 'find-file)
+  (evil-define-key 'normal 'global (kbd "<leader>f") 'project-find-file)
   (evil-define-key 'normal 'global (kbd "<leader>r") 'consult-ripgrep)
   (evil-define-key 'normal 'global (kbd "<leader>t") 'vterm)
   ;; Interactive current-file search.

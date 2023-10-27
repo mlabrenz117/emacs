@@ -24,6 +24,9 @@
 (savehist-mode 1)
 (setq savehist-additional-variables '(register-alist))
 
+;; Remember and restore the last cursor location of opened files
+(save-place-mode 1)
+
 ;; Don't use file backups. Why?
 ;; .. it adds cruft on the file-system which gets annoying.
 (setq backup-inhibited t)
@@ -143,8 +146,9 @@
 
 ;; Auto close pairs
 (electric-pair-mode t)
-(recentf-mode)
+(recentf-mode 1)
 (global-auto-revert-mode)
+;; (setq global-auto-revert-non-file-buffers t)
 
 (provide 'default-config)
 ;;; default-config.el ends here

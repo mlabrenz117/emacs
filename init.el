@@ -54,6 +54,6 @@
 ;; (set-font-face 'default "fontset-standard")
 
 (setq custom-file (concat user-emacs-directory "custom.el"))
-(load custom-file 'noerror)
+(load custom-file 'noerror 'nomessage)
 
 ;;; init.el ends here
